@@ -73,7 +73,7 @@ if __name__ == '__main__':
     model = model.to(device)
 
     logging.info('Started training ...')
-    for e in range(10):
+    for e in range(500):
         loss, acc = train_one_epoch(model, optimiser, criterion, device, train_loader, e)
         train_writer.add_scalar('loss', loss, e)
         train_writer.add_scalar('accuracy', acc, e)
