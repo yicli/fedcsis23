@@ -66,11 +66,11 @@ if __name__ == '__main__':
     )
 
     logging.info('Initialising model ...')
-    model = ConvNet(149, 50, 15, 5, 'batch', residual=True)\
-        .to(device)
+    model = ConvNet(149, 50, 15, 5, 'batch', residual=True)
     criterion = BCELoss()
     optimiser = Adam(model.parameters())
     train_writer.add_graph(model, torch.zeros(16, 149, 1500))
+    model = model.to(device)
 
     logging.info('Started training ...')
     for e in range(10):
