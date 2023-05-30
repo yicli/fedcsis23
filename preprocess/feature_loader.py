@@ -8,12 +8,13 @@ from torch.nn.functional import pad
 from util.util import get_columns_by_lv0
 # from preprocess.data_loader import ParquetLoader
 
+data_dir = os.path.join('.', 'data')
 
 class FeatureDataset(Dataset):
     def __init__(self, feature_set, feature_list):
         if 'csv' not in feature_list:
             feature_list.append('csv')
-        feature_dir = os.path.join('/home/yichaoli8/fed_csis23/features', feature_set)
+        feature_dir = os.path.join(data_dir, 'features', feature_set)
         parquet_ds = pa.ParquetDataset(feature_dir)
         cols_to_load = get_columns_by_lv0(parquet_ds.schema.names, feature_list)
         self.features = parquet_ds.read_pandas(columns=cols_to_load) \
@@ -21,7 +22,7 @@ class FeatureDataset(Dataset):
         self.features.set_index(('csv', ''), inplace=True)
         self.index = pd.DataFrame({'csv': self.features.index.unique()})
 
-        label_dir = '/home/yichaoli8/fed_csis23/train_files_containing_attacks.txt'
+        label_dir = os.path.join(data_dir, 'train_files_containing_attacks.txt')
         with open(label_dir, 'r') as file:
             labels = [line.rstrip() for line in file]
         self.index['labels'] = self.index.csv.isin(labels).astype('uint8')
@@ -35,11 +36,14 @@ class FeatureDataset(Dataset):
             .astype('float32')
         y = self.index.loc[item, 'labels']\
             .astype('float32')
-        return torch.tensor(x.values), torch.tensor(y)
+        return x, y
 
 
 def collate_logs(item_list: list[tuple]):
     x, y = list(zip(*item_list))
+    x = [torch.tensor(e.values) for e in x]
+    y = [torch.tensor(e) for e in y]
+
     x_dim0 = [e.shape[0] for e in x]
     dim0 = max(x_dim0)
     pad_dim0 = [(0, 0, 0, dim0 - e) for e in x_dim0]
@@ -51,7 +55,8 @@ def collate_logs(item_list: list[tuple]):
 
 
 if __name__ == '__main__':
-    ds = FeatureDataset('train_local_scaled', ['csv', 'SYSCALL_syscall', 'PROCESS_comm'])
-    items = [ds.__getitem__(i) for i in range(5)]
-    dl = DataLoader(ds, batch_size=4, shuffle=True, collate_fn=collate_logs)
-    out = next(iter(dl))
+    ds = FeatureDataset('train_local_scaled', ['csv', 'SYSCALL_exit', 'SYSCALL_pid'])
+    x, y = ds[0]
+    # items = [ds.__getitem__(i) for i in range(5)]
+    # dl = DataLoader(ds, batch_size=4, shuffle=True, collate_fn=collate_logs)
+    # out = next(iter(dl))
