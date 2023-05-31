@@ -16,7 +16,7 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 def train():
     run_name = 'conv1d_spawn_count_local'
     train_writer = SummaryWriter(os.path.join('runs', run_name))
-    batch_sz = 16
+    batch_sz = 64
     n_channels = [14, 7, 3]
     dataset_name = 'train_local_scaled'
     features = [
@@ -44,10 +44,18 @@ def train():
     )
 
     logging.info('Started training ...')
-    for e in range(100):
+    for e in range(500):
         loss, acc = train_one_epoch(model, optimiser, criterion, device, train_loader, e)
         train_writer.add_scalar('loss', loss, e)
         train_writer.add_scalar('accuracy', acc, e)
+
+    checkpoint_path = os.path.join('runs', run_name, 'checkpoint.tar')
+    torch.save({
+        'epoch': e,
+        'model_state': model.state_dict(),
+        'opt_state': optimiser.state_dict(),
+        'loss': loss
+    }, checkpoint_path)
 
 
 def train_one_epoch(model, optimiser, criterion, device, data_loader, epoch):
