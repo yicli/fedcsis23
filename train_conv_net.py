@@ -50,7 +50,7 @@ if __name__ == '__main__':
     import torch
     logging.basicConfig(level=logging.INFO)
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-    run_name = 'conv_net_1d_local'
+    run_name = 'conv1d_no1hot_local'
     train_writer = SummaryWriter(os.path.join('runs', run_name, 'train'))
 
     logging.info('Initialising data loader ...')
