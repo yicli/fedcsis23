@@ -23,7 +23,8 @@ class ConvNet(nn.Module):
         self.fc = nn.Linear(channels[-1], 1)
 
     def forward(self, x):
-        x = self.net(x)
+        for b in self.blocks():
+            x = b(x)
         x = x.sum(dim=(2))
         x = self.fc(x)
         x = x.squeeze()
