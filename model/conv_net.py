@@ -3,28 +3,52 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class ConvNet(nn.Module):
+class ConvNet3Blk(nn.Module):
     def __init__(self, channels, norm, residual):
-        assert isinstance(channels, list)
+        assert len(channels) == 4
         super().__init__()
 
         kernel_sz = [150, 40, 10, 3]
         stride = 4
         pad_mode = 'fair'
 
-        self.blocks = []
-        for i in range(1, len(channels)):
-            self.blocks.append(
-                nn.Sequential(
-                    ConvLayer(channels[i-1], channels[i], kernel_sz[i-1], stride, pad_mode, norm),
-                    ResBlock(channels[i], kernel_sz[i], norm, residual),
-                )
-            )
+        self.net = nn.Sequential(
+            ConvLayer(channels[0], channels[1], kernel_sz[0], stride, pad_mode, norm),
+            ResBlock(channels[1], kernel_sz[1], norm, residual),
+            ConvLayer(channels[1], channels[2], kernel_sz[1], stride, pad_mode, norm),
+            ResBlock(channels[2], kernel_sz[2], norm, residual),
+            ConvLayer(channels[2], channels[3], kernel_sz[2], stride, pad_mode, norm),
+            ResBlock(channels[3], kernel_sz[3], norm, residual)
+        )
         self.fc = nn.Linear(channels[-1], 1)
 
     def forward(self, x):
-        for b in self.blocks:
-            x = b(x)
+        x = self.net(x)
+        x = x.sum(dim=(2))
+        x = self.fc(x)
+        x = x.squeeze()
+        return F.sigmoid(x)
+
+
+class ConvNet2Blk(nn.Module):
+    def __init__(self, channels, norm, residual):
+        assert len(channels) == 3
+        super().__init__()
+
+        kernel_sz = [150, 40, 10]
+        stride = 4
+        pad_mode = 'fair'
+
+        self.net = nn.Sequential(
+            ConvLayer(channels[0], channels[1], kernel_sz[0], stride, pad_mode, norm),
+            ResBlock(channels[1], kernel_sz[1], norm, residual),
+            ConvLayer(channels[1], channels[2], kernel_sz[1], stride, pad_mode, norm),
+            ResBlock(channels[2], kernel_sz[2], norm, residual)
+        )
+        self.fc = nn.Linear(channels[-1], 1)
+
+    def forward(self, x):
+        x = self.net(x)
         x = x.sum(dim=(2))
         x = self.fc(x)
         x = x.squeeze()
@@ -33,6 +57,7 @@ class ConvNet(nn.Module):
 
 class ResBlock(nn.Module):
     def __init__(self, channels, kernel_size, norm, residual):
+        assert isinstance(residual, bool)
         super().__init__()
         self.conv1 = self.__make_conv_layer(channels, kernel_size, norm)
         self.conv2 = self.__make_conv_layer(channels, kernel_size, norm)
