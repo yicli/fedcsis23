@@ -54,10 +54,14 @@ if __name__ == '__main__':
     train_writer = SummaryWriter(os.path.join('runs', run_name, 'train'))
 
     logging.info('Initialising data loader ...')
+    # features = [
+    #     'csv', 'SYSCALL_syscall', 'PROCESS_comm', 'SYSCALL_exit_isNeg',
+    #     'CUSTOM_openSockets_count', 'CUSTOM_openFiles_count', 'CUSTOM_libs_count',
+    #     'PROCESS_uid', 'PROCESS_gid'
+    # ]
     features = [
-        'csv', 'SYSCALL_syscall', 'PROCESS_comm', 'SYSCALL_exit_isNeg',
-        'CUSTOM_openSockets_count', 'CUSTOM_openFiles_count', 'CUSTOM_libs_count',
-        'PROCESS_uid', 'PROCESS_gid'
+        'csv', 'SYSCALL_exit_isNeg', 'CUSTOM_openSockets_count',
+        'CUSTOM_openFiles_count', 'CUSTOM_libs_count'
     ]
     train_set = FeatureDataset('train_local_scaled', features)
     train_loader = DataLoader(
