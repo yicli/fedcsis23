@@ -18,6 +18,7 @@ def train():
     train_writer = SummaryWriter(os.path.join('runs', run_name))
     batch_sz = 16
     n_channels = [13, 6, 3]
+    dataset_name = 'train_local_scaled'
 
     logging.info('Initialising model ...')
     model = ConvNet2Blk(n_channels, 'batch', residual=True)
@@ -36,7 +37,7 @@ def train():
         'csv', 'SYSCALL_exit_isNeg', 'CUSTOM_openSockets_count',
         'CUSTOM_openFiles_count', 'CUSTOM_libs_count'
     ]
-    train_set = FeatureDataset('train_local_scaled', features)
+    train_set = FeatureDataset(dataset_name, features)
     train_loader = DataLoader(
         train_set, batch_size=batch_sz, shuffle=True,
         collate_fn=collate_logs
