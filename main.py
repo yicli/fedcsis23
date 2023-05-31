@@ -13,6 +13,42 @@ logging.basicConfig(level=logging.INFO)
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 
+def train():
+    run_name = 'conv1d_no1hot_local'
+    train_writer = SummaryWriter(os.path.join('runs', run_name, 'train'))
+    batch_sz = 16
+    n_channels = [13, 6, 3]
+
+    logging.info('Initialising model ...')
+    model = ConvNet2Blk(n_channels, 'batch', residual=True)
+    criterion = BCELoss()
+    optimiser = Adam(model.parameters())
+    train_writer.add_graph(model, torch.zeros(batch_sz, n_channels[0], 1500))
+    model = model.to(device)
+
+    logging.info('Initialising data loader ...')
+    # features = [
+    #     'csv', 'SYSCALL_syscall', 'PROCESS_comm', 'SYSCALL_exit_isNeg',
+    #     'CUSTOM_openSockets_count', 'CUSTOM_openFiles_count', 'CUSTOM_libs_count',
+    #     'PROCESS_uid', 'PROCESS_gid'
+    # ]
+    features = [
+        'csv', 'SYSCALL_exit_isNeg', 'CUSTOM_openSockets_count',
+        'CUSTOM_openFiles_count', 'CUSTOM_libs_count'
+    ]
+    train_set = FeatureDataset('train_local_scaled', features)
+    train_loader = DataLoader(
+        train_set, batch_size=batch_sz, shuffle=True,
+        collate_fn=collate_logs
+    )
+
+    logging.info('Started training ...')
+    for e in range(100):
+        loss, acc = train_one_epoch(model, optimiser, criterion, device, train_loader, e)
+        train_writer.add_scalar('loss', loss, e)
+        train_writer.add_scalar('accuracy', acc, e)
+
+
 def train_one_epoch(model, optimiser, criterion, device, data_loader, epoch):
     model.train()
     epoch_loss = 0
@@ -50,41 +86,5 @@ def n_right(y_hat, labels):
     return n_right.item()
 
 
-def main():
-    run_name = 'conv1d_no1hot_local'
-    train_writer = SummaryWriter(os.path.join('runs', run_name, 'train'))
-    batch_sz = 16
-    n_channels = [13, 6, 3]
-
-    logging.info('Initialising model ...')
-    model = ConvNet2Blk(n_channels, 'batch', residual=True)
-    criterion = BCELoss()
-    optimiser = Adam(model.parameters())
-    train_writer.add_graph(model, torch.zeros(batch_sz, n_channels[0], 1500))
-    model = model.to(device)
-
-    logging.info('Initialising data loader ...')
-    # features = [
-    #     'csv', 'SYSCALL_syscall', 'PROCESS_comm', 'SYSCALL_exit_isNeg',
-    #     'CUSTOM_openSockets_count', 'CUSTOM_openFiles_count', 'CUSTOM_libs_count',
-    #     'PROCESS_uid', 'PROCESS_gid'
-    # ]
-    features = [
-        'csv', 'SYSCALL_exit_isNeg', 'CUSTOM_openSockets_count',
-        'CUSTOM_openFiles_count', 'CUSTOM_libs_count'
-    ]
-    train_set = FeatureDataset('train_local_scaled', features)
-    train_loader = DataLoader(
-        train_set, batch_size=batch_sz, shuffle=True,
-        collate_fn=collate_logs
-    )
-
-    logging.info('Started training ...')
-    for e in range(100):
-        loss, acc = train_one_epoch(model, optimiser, criterion, device, train_loader, e)
-        train_writer.add_scalar('loss', loss, e)
-        train_writer.add_scalar('accuracy', acc, e)
-
-
 if __name__ == '__main__':
-    main()
+    train()
