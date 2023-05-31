@@ -15,7 +15,7 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 def train():
     run_name = 'conv1d_no1hot_local'
-    train_writer = SummaryWriter(os.path.join('runs', run_name, 'train'))
+    train_writer = SummaryWriter(os.path.join('runs', run_name))
     batch_sz = 16
     n_channels = [13, 6, 3]
 
