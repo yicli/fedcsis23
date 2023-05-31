@@ -1,4 +1,6 @@
 import logging
+import os
+import torch
 from torch.optim import Adam
 from torch.nn import BCELoss
 from torch.utils.data import DataLoader
@@ -6,6 +8,9 @@ from torch.utils.tensorboard import SummaryWriter
 
 from preprocess.feature_loader import FeatureDataset, collate_logs
 from model.conv_net import ConvNet
+
+logging.basicConfig(level=logging.INFO)
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 
 def train_one_epoch(model, optimiser, criterion, device, data_loader, epoch):
@@ -45,11 +50,7 @@ def n_right(y_hat, labels):
     return n_right.item()
 
 
-if __name__ == '__main__':
-    import os
-    import torch
-    logging.basicConfig(level=logging.INFO)
-    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+def main():
     run_name = 'conv1d_no1hot_local'
     train_writer = SummaryWriter(os.path.join('runs', run_name, 'train'))
 
@@ -70,14 +71,18 @@ if __name__ == '__main__':
     )
 
     logging.info('Initialising model ...')
-    model = ConvNet(149, 50, 15, 5, 'batch', residual=True)
+    model = ConvNet([16, 8, 4, 2], 'batch', residual=True)
     criterion = BCELoss()
     optimiser = Adam(model.parameters())
     train_writer.add_graph(model, torch.zeros(16, 149, 1500))
     model = model.to(device)
 
     logging.info('Started training ...')
-    for e in range(500):
+    for e in range(100):
         loss, acc = train_one_epoch(model, optimiser, criterion, device, train_loader, e)
         train_writer.add_scalar('loss', loss, e)
         train_writer.add_scalar('accuracy', acc, e)
+
+
+if __name__ == '__main__':
+    main()
