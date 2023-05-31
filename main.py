@@ -14,11 +14,15 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 
 def train():
-    run_name = 'conv1d_no1hot_local'
+    run_name = 'conv1d_spawn_count_local'
     train_writer = SummaryWriter(os.path.join('runs', run_name))
     batch_sz = 16
-    n_channels = [13, 6, 3]
+    n_channels = [14, 7, 3]
     dataset_name = 'train_local_scaled'
+    features = [
+        'csv', 'SYSCALL_exit_isNeg', 'CUSTOM_openSockets_count',
+        'CUSTOM_openFiles_count', 'CUSTOM_libs_count', 'spawn_count'
+    ]
 
     logging.info('Initialising model ...')
     model = ConvNet2Blk(n_channels, 'batch', residual=True)
@@ -33,10 +37,6 @@ def train():
     #     'CUSTOM_openSockets_count', 'CUSTOM_openFiles_count', 'CUSTOM_libs_count',
     #     'PROCESS_uid', 'PROCESS_gid'
     # ]
-    features = [
-        'csv', 'SYSCALL_exit_isNeg', 'CUSTOM_openSockets_count',
-        'CUSTOM_openFiles_count', 'CUSTOM_libs_count'
-    ]
     train_set = FeatureDataset(dataset_name, features)
     train_loader = DataLoader(
         train_set, batch_size=batch_sz, shuffle=True,
