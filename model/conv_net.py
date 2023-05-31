@@ -4,18 +4,23 @@ import torch.nn.functional as F
 
 
 class ConvNet(nn.Module):
-    def __init__(self, feature_channels, block1_channels, block2_channels, block3_channels, norm, residual):
+    def __init__(self, channels, norm, residual):
+        assert isinstance(channels, list)
         super().__init__()
-        # First fully connected layer
-        self.net = nn.Sequential(
-            ConvLayer(feature_channels, block1_channels, 150, 4, 'fair', norm),
-            ResBlock(block1_channels, 40, norm, residual),
-            ConvLayer(block1_channels, block2_channels, 40, 4, 'fair', norm),
-            ResBlock(block2_channels, 10, norm, residual),
-            ConvLayer(block2_channels, block3_channels, 10, 4, 'fair', norm),
-            ResBlock(block3_channels, 3, norm, residual)
-        )
-        self.fc = nn.Linear(block3_channels, 1)
+
+        kernel_sz = [150, 40, 10, 3]
+        stride = 4
+        pad_mode = 'fair'
+
+        self.blocks = []
+        for i in range(1, len(channels)):
+            self.blocks.append(
+                nn.Sequential(
+                    ConvLayer(channels[i-1], channels[i], kernel_sz[i-1], stride, pad_mode, norm),
+                    ResBlock(channels[i], kernel_sz[i], norm, residual),
+                )
+            )
+        self.fc = nn.Linear(channels[-1], 1)
 
     def forward(self, x):
         x = self.net(x)
