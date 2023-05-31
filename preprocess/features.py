@@ -140,6 +140,36 @@ class PdApplyPool:
         res = pd.DataFrame(res)
         res.columns = pd.MultiIndex.from_product([res.columns, ['']])
         return res
+    
+    def spawn_count(self, data: pd.DataFrame):
+        data = data[['csv', 'SYSCALL_pid', 'SYSCALL_exit']].copy()
+        data.columns = data.columns.get_level_values(0)
+        data.fillna(0, inplace=True)
+        data.set_index('csv', inplace=True)
+        data = data.astype(int)
+
+        uniq_idx = data.index.unique()
+        idx_split = array_split(uniq_idx, 4)
+        data_split = [data.loc[idx] for idx in idx_split]
+
+        logging.info('send to pool: spawn counts')
+        res = pd.concat(self.pool.map(worker_spawn_count, data_split))
+        logging.info('done')
+        res = res.fillna(0)\
+            .astype('int16')\
+            .reset_index(0, drop=True)
+        return res
+
+
+def worker_spawn_count(data: pd.DataFrame):
+    return data.groupby(data.index, sort=False).apply(window_spawn_count)
+
+
+def window_spawn_count(window: pd.DataFrame):
+    pid_counts = window.SYSCALL_pid.value_counts().astype(float)
+    pid_counts.name = 'spawn_count'
+    counts = window.join(pid_counts, on='SYSCALL_exit')['spawn_count']
+    return counts
 
 
 def worker_literal_eval(split):
@@ -177,22 +207,47 @@ def worker_df_value_counts(split):
 # Same question for CUSTOM_libs; use ast.literal_eval(x)
 
 if __name__ == '__main__':
-    # investigation on 'PROCESS_comm', 'PROCESS_exe', 'PROCESS_name' ---- inconclusive
     import pyarrow.parquet as pa
+    from util.util import get_columns_by_lv0
+    from sklearn.preprocessing import minmax_scale
 
-    ds = pa.ParquetDataset('../shards/train_local/')
-    col_names = ['csv', 'PROCESS_comm', 'PROCESS_exe', 'PROCESS_name']
+    ds = pa.ParquetDataset('data/features/train_local_scaled/shard0.parquet')
+    col_names = ['csv', 'SYSCALL_exit', 'SYSCALL_pid']
+    col_names = get_columns_by_lv0(ds.schema.names, col_names)
 
-    # col_names = get_columns_by_lv0(ds.schema.names, col_names)
     df = ds.read_pandas(columns=col_names).to_pandas()
+    df = df.iloc[:100000]
 
-    label_dir = '../train_files_containing_attacks.txt'
-    with open(label_dir, 'r') as file:
-        labels = [line.rstrip() for line in file]
-    df['y'] = df.csv.isin(labels)
+    p = PdApplyPool()
+    out = p.spawn_count(df)
+    p.close_pool()
+    assert (out.index == df.csv).all()
+    outs = minmax_scale(out)
 
-    df['exe_ne_name'] = (df.PROCESS_name != df.PROCESS_exe)
-    df['exe_last'] = df.PROCESS_exe.str.split('/').str[-1]
-    df['name_last'] = df.PROCESS_name.str.split('/').str[-1]
 
-    df['all_equal'] = (df['PROCESS_comm'] == df['name_last']) & (~df.exe_ne_name)
+    # df = df[['csv', 'SYSCALL_pid', 'SYSCALL_exit']].copy()
+    # df.columns = df.columns.get_level_values(0)
+    # df.fillna(0, inplace=True)
+    # df.set_index('csv', inplace=True)
+    # df = df.astype(int)
+    #
+    # spc = df.groupby(df.index, sort=False).apply(window_spawn_count)
+    # spc.fillna(0, inplace=True)
+    # spc.reset_index(level=0, drop=True, inplace=True)
+    # df['spc'] = spc
+
+    # spc = d.groupby(d.index).apply(spawn_count)
+
+
+    # investigation on 'PROCESS_comm', 'PROCESS_exe', 'PROCESS_name' ---- inconclusive
+    #
+    # label_dir = '../train_files_containing_attacks.txt'
+    # with open(label_dir, 'r') as file:
+    #     labels = [line.rstrip() for line in file]
+    # df['y'] = df.csv.isin(labels)
+    #
+    # df['exe_ne_name'] = (df.PROCESS_name != df.PROCESS_exe)
+    # df['exe_last'] = df.PROCESS_exe.str.split('/').str[-1]
+    # df['name_last'] = df.PROCESS_name.str.split('/').str[-1]
+    #
+    # df['all_equal'] = (df['PROCESS_comm'] == df['name_last']) & (~df.exe_ne_name)
