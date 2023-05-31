@@ -23,7 +23,7 @@ class ConvNet(nn.Module):
         self.fc = nn.Linear(channels[-1], 1)
 
     def forward(self, x):
-        for b in self.blocks():
+        for b in self.blocks:
             x = b(x)
         x = x.sum(dim=(2))
         x = self.fc(x)
@@ -91,6 +91,6 @@ class ConvLayer(nn.Module):
 
 
 if __name__ == '__main__':
-    net = ConvNet(149, 50, 15, 5, 'batch', residual=True)
+    net = ConvNet([149, 50, 15], 'batch', residual=True)
     _x = torch.randn(32, 149, 1500)
     _y = net.forward(_x)
