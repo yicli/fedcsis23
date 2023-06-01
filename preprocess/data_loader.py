@@ -68,7 +68,7 @@ class CsvLoader:
         self.data_files['test'] = pd.Series(test_files)
 
         # get train labels
-        label_dir = os.path.join(csv_dir, 'train_files_containing_attacks.txt')
+        label_dir = os.path.join(csv_dir, 'pyproject', 'data', 'train_files_containing_attacks.txt')
         with open(label_dir, 'r') as file:
             train_files_1 = [line.replace('\n', '.csv') for line in file]
 
@@ -125,15 +125,15 @@ class CsvLoader:
         return pd.concat([pd.read_csv(fpath, usecols=columns) for fpath in file_paths],
                          ignore_index=True)
 
-    def load_row_range(self, train_test: object, row_range: slice, pool) -> object:
+    def load_row_range(self, train_test: object, row_range: slice) -> object:
         assert train_test in ('train', 'test')
         assert isinstance(row_range, slice)
         file_list = self.data_files[train_test][row_range]
         file_paths = [os.path.join(self.data_dir[train_test], fname) for fname in file_list]
         logging.info('loading row range %s ...' % str(row_range))
 
-        path_split = np.array_split(file_paths, pool._processes)
-        dfs = pool.map(load_paths, path_split)
+        path_split = np.array_split(file_paths, self.pool._processes)
+        dfs = self.pool.map(load_paths, path_split)
         return pd.concat(dfs, ignore_index=True)
 
 
