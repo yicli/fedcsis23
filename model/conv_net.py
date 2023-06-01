@@ -36,8 +36,8 @@ class ConvNet2Blk(nn.Module):
         assert len(channels) == 3
         super().__init__()
 
-        # kernel_sz = [150, 40, 10]
-        kernel_sz = [10, 10, 10]
+        kernel_sz = [150, 40, 10]
+        # kernel_sz = [10, 10, 10]
         stride = 4
         pad_mode = 'fair'
 
@@ -117,7 +117,7 @@ class ConvLayer(nn.Module):
         assert padding in ('fair', 'same')
         
         if padding == 'fair':
-            pad = ceil((stride - 1)/2)
+            pad = max(kernel_size - stride, ceil((stride - 1)/2))
         elif padding == 'same':
             pad = 'same'
         
