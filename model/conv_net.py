@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from math import ceil
 
 
 class ConvNet3Blk(nn.Module):
@@ -55,6 +56,29 @@ class ConvNet2Blk(nn.Module):
         return F.sigmoid(x)
 
 
+class ConvNet1Blk(nn.Module):
+    def __init__(self, channels, norm, residual):
+        assert len(channels) == 2
+        super().__init__()
+
+        kernel_sz = [4, 4]
+        stride = 4
+        pad_mode = 'fair'
+
+        self.net = nn.Sequential(
+            ConvLayer(channels[0], channels[1], kernel_sz[0], stride, pad_mode, norm),
+            ResBlock(channels[1], kernel_sz[1], norm, residual)
+        )
+        self.fc = nn.Linear(channels[-1], 1)
+
+    def forward(self, x):
+        x = self.net(x)
+        x = x.sum(dim=(2))
+        x = self.fc(x)
+        x = x.squeeze()
+        return F.sigmoid(x)
+
+
 class ResBlock(nn.Module):
     def __init__(self, channels, kernel_size, norm, residual):
         assert isinstance(residual, bool)
@@ -92,7 +116,7 @@ class ConvLayer(nn.Module):
         assert padding in ('fair', 'same')
         
         if padding == 'fair':
-            pad = kernel_size - stride
+            pad = ceil((stride - 1)/2)
         elif padding == 'same':
             pad = 'same'
         
@@ -116,6 +140,7 @@ class ConvLayer(nn.Module):
 
 
 if __name__ == '__main__':
-    net = ConvNet([149, 50, 15], 'batch', residual=True)
-    _x = torch.randn(32, 149, 1500)
+    net = ConvNet1Blk([14, 4], 'batch', residual=True)
+    _x = torch.randn(32, 14, 1500)
     _y = net.forward(_x)
+

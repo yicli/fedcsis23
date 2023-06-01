@@ -7,17 +7,17 @@ from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
 from preprocess.feature_loader import FeatureDataset, collate_logs
-from model.conv_net import ConvNet2Blk, ConvNet3Blk
+from model.conv_net import ConvNet1Blk, ConvNet2Blk, ConvNet3Blk
 
 logging.basicConfig(level=logging.INFO)
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 
 def train():
-    run_name = 'conv1d_spawn_count_local'
+    run_name = 'conv1d_1blk_local'
     train_writer = SummaryWriter(os.path.join('runs', run_name))
     batch_sz = 64
-    n_channels = [14, 7, 3]
+    n_channels = [14, 4]
     dataset_name = 'train_local_scaled'
     features = [
         'csv', 'SYSCALL_exit_isNeg', 'CUSTOM_openSockets_count',
@@ -32,11 +32,6 @@ def train():
     model = model.to(device)
 
     logging.info('Initialising data loader ...')
-    # features = [
-    #     'csv', 'SYSCALL_syscall', 'PROCESS_comm', 'SYSCALL_exit_isNeg',
-    #     'CUSTOM_openSockets_count', 'CUSTOM_openFiles_count', 'CUSTOM_libs_count',
-    #     'PROCESS_uid', 'PROCESS_gid'
-    # ]
     train_set = FeatureDataset(dataset_name, features)
     train_loader = DataLoader(
         train_set, batch_size=batch_sz, shuffle=True,
