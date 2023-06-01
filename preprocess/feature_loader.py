@@ -68,7 +68,7 @@ def collate_logs(item_list: list[tuple]):
 
 
 if __name__ == '__main__':
-    ds = FeatureDataset('valid_scaled', ['csv', 'SYSCALL_exit', 'SYSCALL_pid'])
+    ds = FeatureDataset('train_local_scaled', ['csv', 'SYSCALL_exit', 'SYSCALL_pid'])
     x, y, c = ds[0]
     # items = [ds.__getitem__(i) for i in range(5)]
     # dl = DataLoader(ds, batch_size=4, shuffle=True, collate_fn=collate_logs)

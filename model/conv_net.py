@@ -36,7 +36,8 @@ class ConvNet2Blk(nn.Module):
         assert len(channels) == 3
         super().__init__()
 
-        kernel_sz = [150, 40, 10]
+        # kernel_sz = [150, 40, 10]
+        kernel_sz = [10, 10, 10]
         stride = 4
         pad_mode = 'fair'
 
