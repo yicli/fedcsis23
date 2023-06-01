@@ -36,11 +36,11 @@ class FeatureDataset(Dataset):
             .astype('float32')
         y = self.index.loc[item, 'labels']\
             .astype('float32')
-        return x, y
+        return x, y, csv
 
 
 def collate_logs(item_list: list[tuple]):
-    x, y = list(zip(*item_list))
+    x, y, csv= list(zip(*item_list))
     x = [torch.tensor(e.values) for e in x]
     y = [torch.tensor(e) for e in y]
 
@@ -51,7 +51,7 @@ def collate_logs(item_list: list[tuple]):
     x = torch.stack([pad(_x, _pad) for _x, _pad in _zip])
     x = torch.swapaxes(x, 1, 2)     # treat feature dim as channel
     y = torch.stack(y)
-    return x, y
+    return x, y, csv
 
 
 if __name__ == '__main__':
