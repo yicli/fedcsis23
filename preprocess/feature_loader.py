@@ -57,6 +57,7 @@ def collate_logs(item_list: list[tuple]):
         print(_csv)
         print(_pad)
         print(_x.shape)
+        print(_x)
         raise
     # x = torch.stack([pad(_x, _pad) for _x, _pad in _zip])
     x = torch.swapaxes(x, 1, 2)     # treat feature dim as channel
