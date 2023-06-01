@@ -49,8 +49,8 @@ with torch.no_grad():
         ys = torch.cat((ys, y))
 
 pred_lab = preds > 0.5
-n_correct = (pred_lab == y)
-acc = n_correct / len(y)
+n_correct = (pred_lab == ys).sum()
+acc = n_correct / len(ys)
 print('Accuracy: %.3f' % acc)
 
 # result = pd.DataFrame({'pred': preds, 'y': ys}, index=csvs)
