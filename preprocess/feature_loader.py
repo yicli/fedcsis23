@@ -32,7 +32,7 @@ class FeatureDataset(Dataset):
 
     def __getitem__(self, item):
         csv = self.index.loc[item, 'csv']
-        x = self.features.loc[csv]\
+        x = self.features.loc[[csv]]\
             .astype('float32')
         y = self.index.loc[item, 'labels']\
             .astype('float32')
@@ -47,19 +47,20 @@ def collate_logs(item_list: list[tuple]):
     x_dim0 = [e.shape[0] for e in x]
     dim0 = max(x_dim0)
     pad_dim0 = [(0, 0, 0, dim0 - e) for e in x_dim0]
-    _zip = zip(x, pad_dim0, csv)
-    try:
-        res = []
-        for _x, _pad, _csv in _zip:
-            res.append(pad(_x, _pad))
-        x = torch.stack(res)
-    except RuntimeError:
-        print(_csv)
-        print(_pad)
-        print(_x.shape)
-        print(_x)
-        raise
-    # x = torch.stack([pad(_x, _pad) for _x, _pad in _zip])
+    _zip = zip(x, pad_dim0)
+    # _zip = zip(x, pad_dim0, csv)
+    # try:
+    #     res = []
+    #     for _x, _pad, _csv in _zip:
+    #         res.append(pad(_x, _pad))
+    #     x = torch.stack(res)
+    # except RuntimeError:
+    #     print(_csv)
+    #     print(_pad)
+    #     print(_x.shape)
+    #     print(_x)
+    #     raise
+    x = torch.stack([pad(_x, _pad) for _x, _pad in _zip])
     x = torch.swapaxes(x, 1, 2)     # treat feature dim as channel
     y = torch.stack(y)
     return x, y, csv
