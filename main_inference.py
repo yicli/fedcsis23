@@ -14,7 +14,7 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 batch_sz = 64
 n_channels = [14, 7, 3]
 run_name = 'conv1d_spawn_count_local'
-dataset_name = 'test_scaled'
+dataset_name = 'train_scaled'
 features = [
     'csv', 'SYSCALL_exit_isNeg', 'CUSTOM_openSockets_count',
     'CUSTOM_openFiles_count', 'CUSTOM_libs_count', 'spawn_count'
@@ -38,17 +38,25 @@ test_loader = DataLoader(
 
 csvs = ()
 preds = torch.tensor([]).to(device)
+ys = torch.tensor([]).to(device)
 with torch.no_grad():
-    for x, _, csv in iter(test_loader):
+    for x, y, csv in iter(test_loader):
         x = x.to(device)
+        y = y.to(device)
         y_hat = model(x)
         csvs += csv
         preds = torch.cat((preds, y_hat))
-result = pd.DataFrame({'pred': preds}, index=csvs)
+        ys = torch.cat((ys, y))
 
-test_order_file = os.path.join('data', 'test_files_ordering_for_submissions.txt')
-with open(test_order_file, 'r') as file:
-    labels = [line.rstrip() for line in file]
-test_order = pd.DataFrame({'order': labels})
-test_order = test_order.join(result, on='order')
-np.savetxt('conv_local.txt', test_order.pred.values, fmt='%.10f')
+pred_lab = preds > 0.5
+n_correct = (pred_lab == y)
+acc = n_correct / len(y)
+print('Accuracy: %.3f' % acc)
+
+# result = pd.DataFrame({'pred': preds, 'y': ys}, index=csvs)
+# test_order_file = os.path.join('data', 'test_files_ordering_for_submissions.txt')
+# with open(test_order_file, 'r') as file:
+#     labels = [line.rstrip() for line in file]
+# test_order = pd.DataFrame({'order': labels})
+# test_order = test_order.join(result, on='order')
+# np.savetxt('conv_local.txt', test_order.pred.values, fmt='%.10f')
