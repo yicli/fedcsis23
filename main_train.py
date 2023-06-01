@@ -18,7 +18,8 @@ def train():
     train_writer = SummaryWriter(os.path.join('runs', run_name))
     batch_sz = 64
     n_channels = [14, 7, 3]
-    dataset_name = 'train_local_scaled'
+    train_set_name = 'train_local_scaled'
+    valid_set_name = 'train_local_scaled'
     features = [
         'csv', 'SYSCALL_exit_isNeg',
         'CUSTOM_openFiles_count', 'CUSTOM_libs_count', 'spawn_count'
@@ -32,12 +33,12 @@ def train():
     model = model.to(device)
 
     logging.info('Initialising data loader ...')
-    train_set = FeatureDataset(dataset_name, features)
+    train_set = FeatureDataset(train_set_name, features)
     train_loader = DataLoader(
         train_set, batch_size=batch_sz, shuffle=True,
         collate_fn=collate_logs
     )
-    valid_set = FeatureDataset('valid_scaled', features)
+    valid_set = FeatureDataset(valid_set_name, features)
     valid_loader = DataLoader(
         valid_set, batch_size=batch_sz, shuffle=True,
         collate_fn=collate_logs
