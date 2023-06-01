@@ -37,9 +37,10 @@ test_loader = DataLoader(
 )
 
 csvs = ()
-preds = torch.tensor([])
+preds = torch.tensor([]).to(device)
 with torch.no_grad():
     for x, _, csv in iter(test_loader):
+        x = x.to(device)
         y_hat = model(x)
         csvs += csv
         preds = torch.cat((preds, y_hat))
