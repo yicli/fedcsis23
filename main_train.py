@@ -17,7 +17,7 @@ def train():
     run_name = '2b_local_no_sockets'
     train_writer = SummaryWriter(os.path.join('runs', run_name))
     batch_sz = 64
-    n_channels = [14, 7, 3]
+    n_channels = [4, 8, 4]
     train_set_name = 'train_local_scaled'
     valid_set_name = 'train_local_scaled'
     features = [
