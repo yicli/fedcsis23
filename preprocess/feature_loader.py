@@ -53,11 +53,11 @@ def collate_logs(item_list: list[tuple]):
         for _x, _pad, _csv in _zip:
             res.append(pad(_x, _pad))
         x = torch.stack(res)
-    except RuntimeError as ex:
+    except RuntimeError:
         print(_csv)
         print(_pad)
         print(_x.shape)
-    raise ex
+        raise
     # x = torch.stack([pad(_x, _pad) for _x, _pad in _zip])
     x = torch.swapaxes(x, 1, 2)     # treat feature dim as channel
     y = torch.stack(y)
