@@ -14,10 +14,10 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 
 def train():
-    run_name = 'conv1d_1blk_local'
+    run_name = '2b_local_ker10'
     train_writer = SummaryWriter(os.path.join('runs', run_name))
     batch_sz = 64
-    n_channels = [14, 4]
+    n_channels = [14, 7, 3]
     dataset_name = 'train_local_scaled'
     features = [
         'csv', 'SYSCALL_exit_isNeg', 'CUSTOM_openSockets_count',
@@ -25,7 +25,7 @@ def train():
     ]
 
     logging.info('Initialising model ...')
-    model = ConvNet1Blk(n_channels, 'batch', residual=True)
+    model = ConvNet2Blk(n_channels, 'batch', residual=True)
     criterion = BCELoss()
     optimiser = Adam(model.parameters())
     train_writer.add_graph(model, torch.zeros(batch_sz, n_channels[0], 1500))
@@ -49,7 +49,7 @@ def train():
         train_writer.add_scalar('loss', loss, e)
         train_writer.add_scalar('accuracy', acc, e)
 
-        if (e + 1) % 20:
+        if (e + 1) % 1000 == 0:
             loss, acc = validate(model, criterion, device, valid_loader)
 
             checkpoint_path = os.path.join('runs', run_name, 'checkpoint.tar')
@@ -107,7 +107,7 @@ def validate(model, criterion, device, data_loader):
             loss = criterion(y_hat, labels)
 
             epoch_loss += loss.item()
-            batch_n_right = n_right(y_hat.detach(), labels.detach())
+            batch_n_right = n_right(y_hat, labels)
             epoch_n_right += batch_n_right
             n_sample += len(batch)
 
