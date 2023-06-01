@@ -25,7 +25,7 @@ def train():
     ]
 
     logging.info('Initialising model ...')
-    model = ConvNet2Blk(n_channels, 'batch', residual=True)
+    model = ConvNet1Blk(n_channels, 'batch', residual=True)
     criterion = BCELoss()
     optimiser = Adam(model.parameters())
     train_writer.add_graph(model, torch.zeros(batch_sz, n_channels[0], 1500))
@@ -59,7 +59,7 @@ def train_one_epoch(model, optimiser, criterion, device, data_loader, epoch):
     epoch_n_right = 0
     n_sample = 0
 
-    for iter, (batch, labels) in enumerate(data_loader):
+    for iter, (batch, labels, _) in enumerate(data_loader):
         batch = batch.to(device)
         labels = labels.to(device)
 
