@@ -81,5 +81,5 @@ for i in range(1, 3):
     #     del data, fact, f
     #     gc.collect()
 
-    write_path = os.path.join('data', 'features', data_set, shard_name)
+    write_path = os.path.join('../data', 'features', data_set, shard_name)
     features.to_parquet(write_path, engine='pyarrow', compression='gzip')

@@ -9,7 +9,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 logging.basicConfig(level=logging.INFO)
 count_cols = ['CUSTOM_openSockets_count', 'CUSTOM_openFiles_count', 'CUSTOM_libs_count']
-feature_dir = os.path.join('data', 'features')
+feature_dir = os.path.join('../data', 'features')
 scaler_dir = os.path.join(feature_dir, 'minmaxscaler')
 
 
