@@ -37,6 +37,11 @@ def train():
         train_set, batch_size=batch_sz, shuffle=True,
         collate_fn=collate_logs
     )
+    valid_set = FeatureDataset('valid_scaled', features)
+    valid_loader = DataLoader(
+        valid_set, batch_size=batch_sz, shuffle=True,
+        collate_fn=collate_logs
+    )
 
     logging.info('Started training ...')
     for e in range(500):
@@ -44,13 +49,16 @@ def train():
         train_writer.add_scalar('loss', loss, e)
         train_writer.add_scalar('accuracy', acc, e)
 
-    checkpoint_path = os.path.join('runs', run_name, 'checkpoint.tar')
-    torch.save({
-        'epoch': e,
-        'model_state': model.state_dict(),
-        'opt_state': optimiser.state_dict(),
-        'loss': loss
-    }, checkpoint_path)
+        if (e + 1) % 20:
+            loss, acc = validate(model, criterion, device, valid_loader)
+
+            checkpoint_path = os.path.join('runs', run_name, 'checkpoint.tar')
+            torch.save({
+                'epoch': e,
+                'model_state': model.state_dict(),
+                'opt_state': optimiser.state_dict(),
+                'loss': loss
+            }, checkpoint_path)
 
 
 def train_one_epoch(model, optimiser, criterion, device, data_loader, epoch):
@@ -59,7 +67,7 @@ def train_one_epoch(model, optimiser, criterion, device, data_loader, epoch):
     epoch_n_right = 0
     n_sample = 0
 
-    for iter, (batch, labels, _) in enumerate(data_loader):
+    for i, (batch, labels, _) in enumerate(data_loader):
         batch = batch.to(device)
         labels = labels.to(device)
 
@@ -75,12 +83,37 @@ def train_one_epoch(model, optimiser, criterion, device, data_loader, epoch):
         n_sample += len(batch)
         batch_acc = batch_n_right / len(batch)
 
-        if iter % 10 == 9:
-            logging.info('[%i, %i] loss: %.3f acc: %.2f' % (epoch+1, iter+1, loss.item(), batch_acc))
+        if (i + 1) % 10 == 0:
+            logging.info('[%i, %i] loss: %.3f acc: %.2f' % (epoch+1, i+1, loss.item(), batch_acc))
 
-    epoch_loss /= (iter + 1)
+    epoch_loss /= (i + 1)
     epoch_acc = epoch_n_right / n_sample
     logging.info('[%i] epoch loss: %.3f epoch acc: %.2f' % (epoch+1, epoch_loss, epoch_acc))
+    return epoch_loss, epoch_acc
+
+
+def validate(model, criterion, device, data_loader):
+    model.eval()
+    epoch_loss = 0
+    epoch_n_right = 0
+    n_sample = 0
+
+    with torch.no_grad():
+        for i, (batch, labels, _) in enumerate(data_loader):
+            batch = batch.to(device)
+            labels = labels.to(device)
+
+            y_hat = model(batch)
+            loss = criterion(y_hat, labels)
+
+            epoch_loss += loss.item()
+            batch_n_right = n_right(y_hat.detach(), labels.detach())
+            epoch_n_right += batch_n_right
+            n_sample += len(batch)
+
+    epoch_loss /= (i + 1)
+    epoch_acc = epoch_n_right / n_sample
+    logging.info('Valid loss: %.3f Valid acc: %.2f' % (epoch_loss, epoch_acc))
     return epoch_loss, epoch_acc
 
 
