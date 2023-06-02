@@ -36,7 +36,7 @@ model = ConvNet2BlkMP(n_channels, n_kernels, 'batch', residual=True)
 
 checkpoints = ['checkpoint%i.tar' % i for i in checkpoint_list]
 checkpoints = [
-    torch.load(os.path.join('runs', run_name, c) for c in checkpoints)
+    torch.load(os.path.join('runs', run_name, c)) for c in checkpoints
 ]
 state_dicts = [c['model_state'] for c in checkpoints]
 avg_state = state_dicts[0]
