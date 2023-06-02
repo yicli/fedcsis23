@@ -50,7 +50,7 @@ def train():
         train_writer.add_scalar('loss', loss, e)
         train_writer.add_scalar('accuracy', acc, e)
 
-        if (e + 1) % 5 == 0:
+        if (e + 1) % 20 == 0:
             loss, acc = validate(model, criterion, device, valid_loader)
 
             checkpoint_path = os.path.join('runs', run_name, 'checkpoint.tar')
