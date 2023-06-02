@@ -27,6 +27,7 @@ def train():
         'CUSTOM_openFiles_count', 'CUSTOM_libs_count', 'spawn_count'
     ]
 
+    logging.info('Starting run %s' % run_name)
     logging.info('Initialising model ...')
     model = ConvNet2Blk(n_channels, n_kernels, 'batch', residual=True)
     criterion = BCELoss()
