@@ -23,6 +23,7 @@ class FeatureDataset(Dataset):
         self.features = parquet_ds.read_pandas(columns=cols_to_load) \
             .to_pandas()
         self.features.set_index(('csv', ''), inplace=True)
+        self.features.sort_index(kind='stable', inplace=True)
         self.index = pd.DataFrame({'csv': self.features.index.unique()})
 
         label_dir = os.path.join(data_dir, 'train_files_containing_attacks.txt')
@@ -51,18 +52,6 @@ def collate_logs(item_list: list[tuple]):
     dim0 = max(x_dim0)
     pad_dim0 = [(0, 0, 0, dim0 - e) for e in x_dim0]
     _zip = zip(x, pad_dim0)
-    # _zip = zip(x, pad_dim0, csv)
-    # try:
-    #     res = []
-    #     for _x, _pad, _csv in _zip:
-    #         res.append(pad(_x, _pad))
-    #     x = torch.stack(res)
-    # except RuntimeError:
-    #     print(_csv)
-    #     print(_pad)
-    #     print(_x.shape)
-    #     print(_x)
-    #     raise
     x = torch.stack([pad(_x, _pad) for _x, _pad in _zip])
     x = torch.swapaxes(x, 1, 2)     # treat feature dim as channel
     y = torch.stack(y)
