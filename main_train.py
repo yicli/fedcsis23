@@ -15,14 +15,15 @@ logging.info('Using device %s' % device)
 
 
 def train():
-    run_name = 'aug2_ker101010mp'
+    run_name = 'aug_ker101010mp_dsa'
     train_writer = SummaryWriter(os.path.join('runs', run_name))
     val_writer = SummaryWriter(os.path.join('runs', run_name + '_val'))
     batch_sz = 64
     n_channels = [6, 8, 4]
     n_kernels = [10, 10, 10]
-    train_set_name = 'train_aug2'
-    valid_set_name = 'valid_aug2'
+    train_set_name = 'train_aug'
+    valid_set_name = 'valid_aug'
+    dataset_aug = True
     features = [
         'csv', 'SYSCALL_exit_isNeg', 'CUSTOM_openSockets_count',
         'CUSTOM_openFiles_count', 'CUSTOM_libs_count', 'spawn_count'
@@ -37,7 +38,7 @@ def train():
     model = model.to(device)
 
     logging.info('Initialising data loader ...')
-    train_set = FeatureDataset(train_set_name, features)
+    train_set = FeatureDataset(train_set_name, features, aug=dataset_aug)
     train_loader = DataLoader(
         train_set, batch_size=batch_sz, shuffle=True,
         collate_fn=collate_logs
