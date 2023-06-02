@@ -18,11 +18,11 @@ class FeatureDataset(Dataset):
         feature_dir = os.path.join(data_dir, 'features', feature_set)
         parquet_ds = pa.ParquetDataset(feature_dir)
         cols_to_load = get_columns_by_lv0(parquet_ds.schema.names, feature_list)
+        cols_to_load.remove("('CUSTOM_openSockets_count', 'inet6_connect')")
+
         self.features = parquet_ds.read_pandas(columns=cols_to_load) \
             .to_pandas()
         self.features.set_index(('csv', ''), inplace=True)
-        mask = self.features.columns != ('CUSTOM_openSockets_count', 'inet6_connect')  # remove inet6_connect
-        self.features = self.features.loc[:, mask]
         self.index = pd.DataFrame({'csv': self.features.index.unique()})
 
         label_dir = os.path.join(data_dir, 'train_files_containing_attacks.txt')
