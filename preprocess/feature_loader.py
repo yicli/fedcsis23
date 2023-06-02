@@ -21,6 +21,8 @@ class FeatureDataset(Dataset):
         self.features = parquet_ds.read_pandas(columns=cols_to_load) \
             .to_pandas()
         self.features.set_index(('csv', ''), inplace=True)
+        mask = self.features.columns != ('CUSTOM_openSockets_count', 'inet6_connect')  # remove inet6_connect
+        self.features = self.features.loc[:, mask]
         self.index = pd.DataFrame({'csv': self.features.index.unique()})
 
         label_dir = os.path.join(data_dir, 'train_files_containing_attacks.txt')

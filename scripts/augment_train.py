@@ -15,8 +15,8 @@ import pandas as pd
 
 df1 = pd.read_parquet('data/features/class1.parquet')
 
-df1.set_index('csv', inplace=True)
 df1 = df1.iloc[:, [0, 1, 2, 3, -3, -2, -1]]
+df1.set_index('csv', inplace=True)
 df1 = df1.replace({0: np.nan})
 std = df1.std()
 
