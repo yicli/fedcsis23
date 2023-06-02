@@ -30,8 +30,8 @@ features = [
     'CUSTOM_openFiles_count', 'CUSTOM_libs_count', 'spawn_count'
 ]
 checkpoint_list = [24, 29, 34, 49, 54, 59, 64]
-checkpoint_list = [24, 29, 34]
-checkpoint_list = [49, 54, 59, 64]
+# checkpoint_list = [24, 29, 34]
+# checkpoint_list = [49, 54, 59, 64]
 
 logging.info('Initialising model for inference...')
 model = ConvNet2BlkMP(n_channels, n_kernels, 'batch', residual=True)
