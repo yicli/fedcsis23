@@ -10,6 +10,7 @@ for f in os.listdir(dir):
 
 csv_list = []
 path_list = [os.path.join(dir, f) for f in f_list]
+path_list += ['data/features/valid_aug/class1_valid.parquet']
 for p in path_list:
     csv_list.extend(
         pd.read_parquet(p, columns=["('csv', '')"])
