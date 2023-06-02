@@ -27,15 +27,16 @@ train_csv = uniq_csv[70:]
 df1_valid = df1.loc[valid_csv]
 df1_train = df1.loc[train_csv]
 
+# train
 dfs = []
 for i in range(1, 28):
-    new = df1_train + np.random.randn(*df1_train.shape) * std.values
+    new = df1_train + np.random.randn(*df1_train.shape) * 2 * std.values
     new.index = new.index.astype(str) + '_' + str(i)
     dfs.append(new)
 
     if i % 4 == 0:
         n = i/4
-        save_dir = 'data/features/train_aug/class1_%i.parquet' % n
+        save_dir = 'data/features/train_aug2/class1_%i.parquet' % n
         shard = pd.concat(dfs)
         shard.clip(0, 1, inplace=True)
         shard.fillna(0, inplace=True)
@@ -43,10 +44,22 @@ for i in range(1, 28):
         shard.to_parquet(save_dir, compression='gzip', engine='pyarrow')
         dfs = []
 
-save_dir = 'data/features/train_aug/class1_0.parquet'
+save_dir = 'data/features/train_aug2/class1_0.parquet'
 shard = pd.concat(dfs + [df1_train])
 shard.clip(0, 1, inplace=True)
 shard.fillna(0, inplace=True)
 shard.reset_index(inplace=True)
 shard.to_parquet(save_dir, compression='gzip', engine='pyarrow')
+
+#valid
 dfs = []
+for i in range(1, 28):
+    new = df1_valid + np.random.randn(*df1_valid.shape) * 2 * std.values
+    new.index = new.index.astype(str) + '_' + str(i)
+    dfs.append(new)
+save_dir = 'data/features/val_aug2/class1_valid.parquet'
+shard = pd.concat(dfs + [df1_valid])
+shard.clip(0, 1, inplace=True)
+shard.fillna(0, inplace=True)
+shard.reset_index(inplace=True)
+shard.to_parquet(save_dir, compression='gzip', engine='pyarrow')
