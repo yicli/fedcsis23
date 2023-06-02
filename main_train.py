@@ -59,7 +59,7 @@ def train():
             val_loss, val_acc = validate(model, criterion, device, valid_loader)
             val_writer.add_scalar('loss', val_loss, e)
             val_writer.add_scalar('accuracy', val_acc, e)
-            checkpoint_path = os.path.join('runs', run_name, 'checkpoint.tar')
+            checkpoint_path = os.path.join('runs', run_name, 'checkpoint%i.tar' % e)
             torch.save({
                 'epoch': e,
                 'model_state': model.state_dict(),
