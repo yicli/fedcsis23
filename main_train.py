@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
 from preprocess.feature_loader import FeatureDataset, collate_logs
-from model.conv_net import ConvNet1Blk, ConvNet2Blk, ConvNet3Blk
+from model.conv_net import ConvNet1Blk, ConvNet2Blk, ConvNet3Blk, ConvNet2BlkMP
 
 logging.basicConfig(level=logging.INFO)
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -15,7 +15,7 @@ logging.info('Using device %s' % device)
 
 
 def train():
-    run_name = 'aug2_ker101010'
+    run_name = 'aug2_ker101010mp'
     train_writer = SummaryWriter(os.path.join('runs', run_name))
     val_writer = SummaryWriter(os.path.join('runs', run_name + '_val'))
     batch_sz = 64
@@ -30,7 +30,7 @@ def train():
 
     logging.info('Starting run %s' % run_name)
     logging.info('Initialising model ...')
-    model = ConvNet2Blk(n_channels, n_kernels, 'batch', residual=True)
+    model = ConvNet2BlkMP(n_channels, n_kernels, 'batch', residual=True)
     criterion = BCELoss()
     optimiser = Adam(model.parameters())
     train_writer.add_graph(model, torch.zeros(batch_sz, n_channels[0], 1500))

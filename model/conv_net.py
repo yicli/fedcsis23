@@ -31,6 +31,35 @@ class ConvNet3Blk(nn.Module):
         return F.sigmoid(x)
 
 
+class ConvNet2BlkMP(nn.Module):
+    def __init__(self, channels, kernels, norm, residual):
+        assert len(channels) == 3
+        super().__init__()
+
+        kernel_sz = kernels
+        stride = 4
+        pad_mode = 'fair'
+
+        self.net = nn.Sequential(
+            ConvLayer(channels[0], channels[1], kernel_sz[0], stride, pad_mode, norm),
+            nn.MaxPool1d(2, 2),
+            ResBlock(channels[1], kernel_sz[1], norm, residual),
+            nn.MaxPool1d(2, 2),
+            ConvLayer(channels[1], channels[2], kernel_sz[1], stride, pad_mode, norm),
+            nn.MaxPool1d(2, 2),
+            ResBlock(channels[2], kernel_sz[2], norm, residual),
+            nn.MaxPool1d(2, 2),
+        )
+        self.fc = nn.Linear(channels[-1], 1)
+
+    def forward(self, x):
+        x = self.net(x)
+        x = x.sum(dim=(2))
+        x = self.fc(x)
+        x = x.squeeze()
+        return F.sigmoid(x)
+
+
 class ConvNet2Blk(nn.Module):
     def __init__(self, channels, kernels, norm, residual):
         assert len(channels) == 3
