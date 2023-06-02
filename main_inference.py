@@ -39,22 +39,22 @@ test_loader = DataLoader(
 
 csvs = ()
 preds = torch.tensor([]).to(device)
-ys = torch.tensor([]).to(device)
+# ys = torch.tensor([]).to(device)
 with torch.no_grad():
-    for x, y, csv in iter(test_loader):
+    for x, _, csv in iter(test_loader):
         x = x.to(device)
-        y = y.to(device)
+        # y = y.to(device)
         y_hat = model(x)
         csvs += csv
         preds = torch.cat((preds, y_hat))
-        ys = torch.cat((ys, y))
+        # ys = torch.cat((ys, y))
 
 # pred_lab = preds > 0.5
 # n_correct = (pred_lab == ys).sum()
 # acc = n_correct / len(ys)
 # print('Accuracy: %.3f' % acc)
 
-result = pd.DataFrame({'pred': preds, 'y': ys}, index=csvs)
+result = pd.DataFrame({'pred': preds.cpu()}, index=csvs)
 test_order_file = os.path.join('data', 'test_files_ordering_for_submissions.txt')
 with open(test_order_file, 'r') as file:
     labels = [line.rstrip() for line in file]
