@@ -14,14 +14,14 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 
 def train():
-    run_name = '2b_local_no_sockets'
+    run_name = 'test'
     train_writer = SummaryWriter(os.path.join('runs', run_name))
-    batch_sz = 64
-    n_channels = [4, 8, 4]
-    train_set_name = 'train_local_scaled'
-    valid_set_name = 'train_local_scaled'
+    batch_sz = 16
+    n_channels = [6, 8, 4]
+    train_set_name = 'valid_aug'
+    valid_set_name = 'valid_aug'
     features = [
-        'csv', 'SYSCALL_exit_isNeg',
+        'csv', 'SYSCALL_exit_isNeg', 'CUSTOM_openSockets_count',
         'CUSTOM_openFiles_count', 'CUSTOM_libs_count', 'spawn_count'
     ]
 
@@ -45,12 +45,12 @@ def train():
     )
 
     logging.info('Started training ...')
-    for e in range(500):
+    for e in range(100):
         loss, acc = train_one_epoch(model, optimiser, criterion, device, train_loader, e)
         train_writer.add_scalar('loss', loss, e)
         train_writer.add_scalar('accuracy', acc, e)
 
-        if (e + 1) % 1000 == 0:
+        if (e + 1) % 5 == 0:
             loss, acc = validate(model, criterion, device, valid_loader)
 
             checkpoint_path = os.path.join('runs', run_name, 'checkpoint.tar')
