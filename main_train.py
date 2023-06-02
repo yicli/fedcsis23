@@ -16,6 +16,7 @@ logging.info('Using device %s' % device)
 def train():
     run_name = 'aug_ker502010'
     train_writer = SummaryWriter(os.path.join('runs', run_name))
+    val_writer = SummaryWriter(os.path.join('runs', run_name + '_val'))
     batch_sz = 64
     n_channels = [6, 8, 4]
     train_set_name = 'train_aug'
@@ -51,8 +52,9 @@ def train():
         train_writer.add_scalar('accuracy', acc, e)
 
         if (e + 1) % 20 == 0:
-            loss, acc = validate(model, criterion, device, valid_loader)
-
+            val_loss, val_acc = validate(model, criterion, device, valid_loader)
+            val_writer.add_scalar('loss', val_loss, e)
+            val_writer.add_scalar('accuracy', val_acc, e)
             checkpoint_path = os.path.join('runs', run_name, 'checkpoint.tar')
             torch.save({
                 'epoch': e,
