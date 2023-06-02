@@ -84,7 +84,7 @@ def train_one_epoch(model, optimiser, criterion, device, data_loader, epoch):
         n_sample += len(batch)
         batch_acc = batch_n_right / len(batch)
 
-        if (i + 1) % 10 == 0:
+        if (i + 1) % 100 == 0:
             logging.info('[%i, %i] loss: %.3f acc: %.2f' % (epoch+1, i+1, loss.item(), batch_acc))
 
     epoch_loss /= (i + 1)
