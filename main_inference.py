@@ -60,4 +60,4 @@ with open(test_order_file, 'r') as file:
     labels = [line.rstrip() for line in file]
 test_order = pd.DataFrame({'order': labels})
 test_order = test_order.join(result, on='order')
-np.savetxt('conv_local.txt', test_order.pred.values, fmt='%.10f')
+np.savetxt('inf' + run_name +'.txt', test_order.pred.values, fmt='%.10f')
