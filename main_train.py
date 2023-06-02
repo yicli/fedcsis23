@@ -14,11 +14,12 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 logging.info('Using device %s' % device)
 
 def train():
-    run_name = 'aug_ker502010'
+    run_name = 'aug_ker101010'
     train_writer = SummaryWriter(os.path.join('runs', run_name))
     val_writer = SummaryWriter(os.path.join('runs', run_name + '_val'))
     batch_sz = 64
     n_channels = [6, 8, 4]
+    n_kernels = [10, 10, 10]
     train_set_name = 'train_aug'
     valid_set_name = 'valid_aug'
     features = [
@@ -27,7 +28,7 @@ def train():
     ]
 
     logging.info('Initialising model ...')
-    model = ConvNet2Blk(n_channels, 'batch', residual=True)
+    model = ConvNet2Blk(n_channels, n_kernels, 'batch', residual=True)
     criterion = BCELoss()
     optimiser = Adam(model.parameters())
     train_writer.add_graph(model, torch.zeros(batch_sz, n_channels[0], 1500))

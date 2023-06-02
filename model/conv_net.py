@@ -32,13 +32,11 @@ class ConvNet3Blk(nn.Module):
 
 
 class ConvNet2Blk(nn.Module):
-    def __init__(self, channels, norm, residual):
+    def __init__(self, channels, kernels, norm, residual):
         assert len(channels) == 3
         super().__init__()
 
-        # kernel_sz = [150, 40, 10]
-        kernel_sz = [50, 20, 10]
-        # kernel_sz = [10, 10, 10]
+        kernel_sz = kernels
         stride = 4
         pad_mode = 'fair'
 
