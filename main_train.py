@@ -11,7 +11,7 @@ from model.conv_net import ConvNet1Blk, ConvNet2Blk, ConvNet3Blk
 
 logging.basicConfig(level=logging.INFO)
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-
+logging.info('Using device %s' % device)
 
 def train():
     run_name = 'aug_ker502010'
