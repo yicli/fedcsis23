@@ -12,16 +12,17 @@ logging.basicConfig(level=logging.INFO)
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 batch_sz = 64
-n_channels = [14, 7, 3]
-run_name = 'conv1d_spawn_count_local'
-dataset_name = 'train_scaled'
+n_channels = [6, 8, 4]
+run_name = 'aug_ker101010'
+dataset_name = 'test_scaled'
+n_kernels = [10, 10, 10]
 features = [
     'csv', 'SYSCALL_exit_isNeg', 'CUSTOM_openSockets_count',
     'CUSTOM_openFiles_count', 'CUSTOM_libs_count', 'spawn_count'
 ]
 
 logging.info('Initialising model for inference...')
-model = ConvNet2Blk(n_channels, 'batch', residual=True)
+model = ConvNet2Blk(n_channels, n_kernels, 'batch', residual=True)
 checkpoint = torch.load(
     os.path.join('runs', run_name, 'checkpoint.tar')
 )
@@ -48,15 +49,15 @@ with torch.no_grad():
         preds = torch.cat((preds, y_hat))
         ys = torch.cat((ys, y))
 
-pred_lab = preds > 0.5
-n_correct = (pred_lab == ys).sum()
-acc = n_correct / len(ys)
-print('Accuracy: %.3f' % acc)
+# pred_lab = preds > 0.5
+# n_correct = (pred_lab == ys).sum()
+# acc = n_correct / len(ys)
+# print('Accuracy: %.3f' % acc)
 
-# result = pd.DataFrame({'pred': preds, 'y': ys}, index=csvs)
-# test_order_file = os.path.join('data', 'test_files_ordering_for_submissions.txt')
-# with open(test_order_file, 'r') as file:
-#     labels = [line.rstrip() for line in file]
-# test_order = pd.DataFrame({'order': labels})
-# test_order = test_order.join(result, on='order')
-# np.savetxt('conv_local.txt', test_order.pred.values, fmt='%.10f')
+result = pd.DataFrame({'pred': preds, 'y': ys}, index=csvs)
+test_order_file = os.path.join('data', 'test_files_ordering_for_submissions.txt')
+with open(test_order_file, 'r') as file:
+    labels = [line.rstrip() for line in file]
+test_order = pd.DataFrame({'order': labels})
+test_order = test_order.join(result, on='order')
+np.savetxt('conv_local.txt', test_order.pred.values, fmt='%.10f')

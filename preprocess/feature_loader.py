@@ -18,7 +18,21 @@ class FeatureDataset(Dataset):
         feature_dir = os.path.join(data_dir, 'features', feature_set)
         parquet_ds = pa.ParquetDataset(feature_dir)
         cols_to_load = get_columns_by_lv0(parquet_ds.schema.names, feature_list)
-        cols_to_load.remove("('CUSTOM_openSockets_count', 'inet6_connect')")
+        to_remove = [
+            "('CUSTOM_openSockets_count', 'inet6_bind')",
+            "('CUSTOM_openSockets_count', 'packet_bind')",
+            "('CUSTOM_openSockets_count', 'inet_bind')",
+            "('CUSTOM_openSockets_count', 'local_listen')",
+            "('CUSTOM_openSockets_count', 'local_bind')",
+            "('CUSTOM_openSockets_count', 'inet_connect')",
+            "('CUSTOM_openSockets_count', 'inet6_connect')",
+            "('CUSTOM_openSockets_count', 'unknown_connect')"
+        ]
+        for col in to_remove:
+            try:
+                cols_to_load.remove(col)
+            except ValueError:
+                continue
 
         self.features = parquet_ds.read_pandas(columns=cols_to_load) \
             .to_pandas()
