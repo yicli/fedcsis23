@@ -42,13 +42,13 @@ class ConvNet2BlkMP(nn.Module):
 
         self.net = nn.Sequential(
             ConvLayer(channels[0], channels[1], kernel_sz[0], stride, pad_mode, norm),
-            nn.MaxPool1d(2, 2),
+            nn.MaxPool1d(4, 4),
             ResBlock(channels[1], kernel_sz[1], norm, residual),
-            nn.MaxPool1d(2, 2),
+            nn.MaxPool1d(4, 4),
             ConvLayer(channels[1], channels[2], kernel_sz[1], stride, pad_mode, norm),
-            nn.MaxPool1d(2, 2),
+            nn.MaxPool1d(4, 4),
             ResBlock(channels[2], kernel_sz[2], norm, residual),
-            nn.MaxPool1d(2, 2),
+            nn.MaxPool1d(4, 4),
         )
         self.fc = nn.Linear(channels[-1], 1)
 
