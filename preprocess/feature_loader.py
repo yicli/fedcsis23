@@ -4,6 +4,8 @@ import pyarrow.parquet as pa
 import torch
 from torch.utils.data import Dataset, DataLoader
 from torch.nn.functional import pad
+import logging
+import numpy as np
 
 from util.util import get_columns_by_lv0
 # from preprocess.data_loader import ParquetLoader
@@ -12,7 +14,8 @@ data_dir = os.path.join('.', 'data')
 
 
 class FeatureDataset(Dataset):
-    def __init__(self, feature_set, feature_list):
+    def __init__(self, feature_set, feature_list, aug=False):
+        self.aug = aug
         if 'csv' not in feature_list:
             feature_list.append('csv')
         feature_dir = os.path.join(data_dir, 'features', feature_set)
@@ -40,6 +43,13 @@ class FeatureDataset(Dataset):
         self.features.sort_index(kind='stable', inplace=True)
         self.index = pd.DataFrame({'csv': self.features.index.unique()})
 
+        #aug
+        if self.aug:
+            self.std = self.features.std()
+            self.std.iloc[0] = 0
+            logging.info('Augmenting data using std')
+            logging.info(str(self.std))
+
         label_dir = os.path.join(data_dir, 'train_files_containing_attacks.txt')
         with open(label_dir, 'r') as file:
             labels = [line.rstrip() for line in file]
@@ -54,6 +64,8 @@ class FeatureDataset(Dataset):
             .astype('float32')
         y = self.index.loc[item, 'labels']\
             .astype('float32')
+        if self.aug:
+            x = x + np.random.randn(*x.shape) * self.std.values
         return x, y, csv
 
 
