@@ -18,7 +18,7 @@ def train():
     train_writer = SummaryWriter(os.path.join('runs', run_name))
     batch_sz = 16
     n_channels = [6, 8, 4]
-    train_set_name = 'valid_aug'
+    train_set_name = 'train_aug'
     valid_set_name = 'valid_aug'
     features = [
         'csv', 'SYSCALL_exit_isNeg', 'CUSTOM_openSockets_count',
