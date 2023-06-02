@@ -66,6 +66,7 @@ class FeatureDataset(Dataset):
             .astype('float32')
         if self.aug:
             x = x + np.random.randn(*x.shape) * self.std.values
+            x = x.astype('float32')
         return x, y, csv
 
 
