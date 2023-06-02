@@ -5,7 +5,7 @@ import numpy as np
 
 import torch
 from torch.utils.data import DataLoader
-from model.conv_net import ConvNet2Blk, ConvNet3Blk
+from model.conv_net import ConvNet2Blk, ConvNet3Blk, ConvNet2BlkMP
 from preprocess.feature_loader import FeatureDataset, collate_logs
 
 logging.basicConfig(level=logging.INFO)
@@ -13,7 +13,7 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 batch_sz = 64
 n_channels = [6, 8, 4]
-run_name = 'aug_ker101010'
+run_name = 'aug2_ker101010mp4'
 dataset_name = 'test_scaled'
 n_kernels = [10, 10, 10]
 features = [
@@ -22,7 +22,7 @@ features = [
 ]
 
 logging.info('Initialising model for inference...')
-model = ConvNet2Blk(n_channels, n_kernels, 'batch', residual=True)
+model = ConvNet2BlkMP(n_channels, n_kernels, 'batch', residual=True)
 checkpoint = torch.load(
     os.path.join('runs', run_name, 'checkpoint.tar')
 )
