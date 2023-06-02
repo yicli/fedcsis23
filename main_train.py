@@ -16,7 +16,7 @@ logging.info('Using device %s' % device)
 def train():
     run_name = 'aug_ker502010'
     train_writer = SummaryWriter(os.path.join('runs', run_name))
-    batch_sz = 32
+    batch_sz = 64
     n_channels = [6, 8, 4]
     train_set_name = 'train_aug'
     valid_set_name = 'valid_aug'
