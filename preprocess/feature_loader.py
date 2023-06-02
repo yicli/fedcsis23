@@ -45,7 +45,7 @@ class FeatureDataset(Dataset):
 
         #aug
         if self.aug:
-            self.std = self.features.std()
+            self.std = self.features.std().astype('float32')
             self.std.iloc[0] = 0
             logging.info('Augmenting data using std')
             logging.info(str(self.std))
