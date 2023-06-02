@@ -57,7 +57,7 @@ for i in range(1, 28):
     new = df1_valid + np.random.randn(*df1_valid.shape) * 2 * std.values
     new.index = new.index.astype(str) + '_' + str(i)
     dfs.append(new)
-save_dir = 'data/features/val_aug2/class1_valid.parquet'
+save_dir = 'data/features/valid_aug2/class1_valid.parquet'
 shard = pd.concat(dfs + [df1_valid])
 shard.clip(0, 1, inplace=True)
 shard.fillna(0, inplace=True)
