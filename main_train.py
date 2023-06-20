@@ -1,5 +1,9 @@
 import logging
 import os
+import re
+import shutil
+
+import numpy as np
 import torch
 from torch.optim import Adam
 from torch.nn import BCELoss
@@ -7,7 +11,7 @@ from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
 from preprocess.feature_loader import FeatureDataset, collate_logs
-from model.conv_net import ConvNet1Blk, ConvNet2Blk, ConvNet3Blk, ConvNet2BlkMP
+from model.conv_net import ConvNet1Blk, ConvNet2Blk, ConvNet3Blk, ConvNet2BlkMP, ConvNetLogReg
 
 logging.basicConfig(level=logging.INFO)
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -15,12 +19,13 @@ logging.info('Using device %s' % device)
 
 
 def train():
-    run_name = 'aug2_ker101010mp4'
+    run_name = 'conv_log_reg_nonres'
+    res = False
     train_writer = SummaryWriter(os.path.join('runs', run_name))
     val_writer = SummaryWriter(os.path.join('runs', run_name + '_val'))
     batch_sz = 64
-    n_channels = [6, 8, 4]
-    n_kernels = [10, 10, 10]
+    # n_channels = [6, 8, 4]
+    # n_kernels = [10, 10, 10]
     train_set_name = 'train_aug2'
     valid_set_name = 'valid_aug2'
     dataset_aug = False
@@ -31,10 +36,10 @@ def train():
 
     logging.info('Starting run %s' % run_name)
     logging.info('Initialising model ...')
-    model = ConvNet2BlkMP(n_channels, n_kernels, 'batch', residual=True)
+    model = ConvNetLogReg('batch', res)
     criterion = BCELoss()
     optimiser = Adam(model.parameters())
-    train_writer.add_graph(model, torch.zeros(batch_sz, n_channels[0], 1500))
+    train_writer.add_graph(model, torch.zeros(batch_sz, 6, 1500))
     model = model.to(device)
 
     logging.info('Initialising data loader ...')
@@ -50,12 +55,14 @@ def train():
     )
 
     logging.info('Started training ...')
+    val_losses = []
+    chk_pts = []
     for e in range(100):
         loss, acc = train_one_epoch(model, optimiser, criterion, device, train_loader, e)
         train_writer.add_scalar('loss', loss, e)
         train_writer.add_scalar('accuracy', acc, e)
 
-        if (e + 1) % 20 == 0:
+        if (e + 1) % 10 == 0:
             val_loss, val_acc = validate(model, criterion, device, valid_loader)
             val_writer.add_scalar('loss', val_loss, e)
             val_writer.add_scalar('accuracy', val_acc, e)
@@ -66,7 +73,14 @@ def train():
                 'opt_state': optimiser.state_dict(),
                 'loss': loss
             }, checkpoint_path)
+            val_losses.append(val_loss)
+            chk_pts.append(checkpoint_path)
 
+    # save min val_loss as checkpoint.tar
+    min_idx = val_losses.index(min(val_losses))
+    src = chk_pts[min_idx]
+    dest = re.sub(r'[0-9]+\.tar', '.tar', src)
+    shutil.copyfile(src, dest)
 
 def train_one_epoch(model, optimiser, criterion, device, data_loader, epoch):
     model.train()

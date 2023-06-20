@@ -4,6 +4,20 @@ import torch.nn.functional as F
 from math import ceil
 
 
+class ConvNetLogReg(nn.Module):
+    def __init__(self, norm, residual):
+        super().__init__()
+        self.net = ResBlock(6, 1, norm, residual)
+        self.fc = nn.Linear(6, 1)
+
+    def forward(self, x):
+        x = self.net(x)
+        x = x.sum(dim=(2))
+        x = self.fc(x)
+        x = x.squeeze()
+        return F.sigmoid(x)
+
+
 class ConvNet3Blk(nn.Module):
     def __init__(self, channels, norm, residual):
         assert len(channels) == 4
@@ -169,7 +183,8 @@ class ConvLayer(nn.Module):
 
 
 if __name__ == '__main__':
-    net = ConvNet1Blk([14, 4], 'batch', residual=True)
-    _x = torch.randn(32, 14, 1500)
+    # net = ConvNet1Blk([14, 4], 'batch', residual=True)
+    net = ConvNetLogReg('batch', False)
+    _x = torch.randn(32, 6, 1500)
     _y = net.forward(_x)
 
